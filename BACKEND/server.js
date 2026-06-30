@@ -1,0 +1,33 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+require('dotenv').config();
+
+const authRouter = require('./routes/auth');
+const gymRouter = require('./routes/gyms');
+const reviewRouter = require('./routes/reviews');
+const favouriteRouter = require('./routes/favourites');
+
+const app = express();
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // adjust to your frontend port
+
+app.use('/api/auth', authRouter);
+app.use('/api/gyms', gymRouter);
+app.use('/api/reviews', reviewRouter);
+app.use('/api/favourites', favouriteRouter);
+
+async function main() {
+    await mongoose.connect(process.env.MONGO_URI);
+}
+
+main()
+    .then(() => {
+        app.listen(process.env.PORT, () => {
+            console.log("Server listening at port: " + process.env.PORT);
+        })
+    })
+    .catch(err => console.log("Error Occurred: " + err));
