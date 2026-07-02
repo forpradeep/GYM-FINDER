@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
+const connectDB = require('./config/db');
 
 const authRouter = require('./routes/auth');
 const gymRouter = require('./routes/gyms');
@@ -21,7 +22,7 @@ app.use('/api/reviews', reviewRouter);
 app.use('/api/favourites', favouriteRouter);
 
 async function main() {
-    await mongoose.connect(process.env.MONGO_URI);
+    await connectDB();
 }
 
 main()
