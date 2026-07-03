@@ -14,7 +14,12 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // adjust to your frontend port
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+})); // adjust to your frontend port
 
 app.use('/api/auth', authRouter);
 app.use('/api/gyms', gymRouter);
