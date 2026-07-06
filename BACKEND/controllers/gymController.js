@@ -12,10 +12,10 @@ const createGym = async (req, res) => {
             membershipPrice,
             images,
             amenities,
-            ownerId: req.result._id, 
+            ownerId: req.result._id,
             location: {
                 type: 'Point',
-                coordinates: [lng, lat] 
+                coordinates: [lng, lat]
             }
         });
 
@@ -30,7 +30,6 @@ const getAllGyms = async (req, res) => {
         const { lat, lng, radius } = req.query;
 
         if (!lat || !lng) {
-          
             const gyms = await Gym.find({});
             return res.status(200).json({ gyms });
         }
@@ -42,7 +41,7 @@ const getAllGyms = async (req, res) => {
                         type: "Point",
                         coordinates: [parseFloat(lng), parseFloat(lat)]
                     },
-                    $maxDistance: (radius ? parseFloat(radius) : 5) * 1000 
+                    $maxDistance: (radius ? parseFloat(radius) : 5) * 1000
                 }
             }
         });
@@ -60,6 +59,16 @@ const getOneGym = async (req, res) => {
         res.status(200).json({ gym });
     } catch (err) {
         res.status(404).send('Error: ' + err.message);
+    }
+}
+
+// ✅ new route — get owner's gyms
+const getOwnerGyms = async (req, res) => {
+    try {
+        const gyms = await Gym.find({ ownerId: req.result._id });
+        res.status(200).json({ gyms });
+    } catch (err) {
+        res.status(400).send('Error: ' + err.message);
     }
 }
 
@@ -99,4 +108,4 @@ const deleteGym = async (req, res) => {
     }
 }
 
-module.exports = { createGym, getAllGyms, getOneGym, updateGym, deleteGym };
+module.exports = { createGym, getAllGyms, getOneGym, updateGym, deleteGym, getOwnerGyms };

@@ -8,6 +8,7 @@ import OwnerDashboard from './pages/OwnerDashboard'
 import CreateGym from './pages/CreateGym'
 import EditGym from './pages/EditGym'
 import Navbar from './components/navbar'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -18,10 +19,26 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/gym/:id" element={<GymDetail />} />
-        <Route path="/favourites" element={<Favourites />} />
-        <Route path="/dashboard" element={<OwnerDashboard />} />
-        <Route path="/gym/create" element={<CreateGym />} />
-        <Route path="/gym/edit/:id" element={<EditGym />} />
+        <Route path="/favourites" element={
+          <ProtectedRoute allowedRole="seeker">
+            <Favourites />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute allowedRole="owner">
+            <OwnerDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/gym/create" element={
+          <ProtectedRoute allowedRole="owner">
+            <CreateGym />
+          </ProtectedRoute>
+        } />
+        <Route path="/gym/edit/:id" element={
+          <ProtectedRoute allowedRole="owner">
+            <EditGym />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   )
