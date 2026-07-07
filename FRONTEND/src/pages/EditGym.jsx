@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
+import axios from 'axios'
 
 const gymSchema = z.object({
   title: z.string().min(3, "Minimum 3 characters").max(50, "Maximum 50 characters"),
@@ -22,6 +23,9 @@ const EditGym = () => {
   const [location, setLocation] = useState(null)
   const [selectedAmenities, setSelectedAmenities] = useState([])
   const [locationLoading, setLocationLoading] = useState(false)
+  const [images, setImages] = useState([])
+  const [imageLoading, setImageLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState([])
   const navigate = useNavigate()
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -41,6 +45,8 @@ const EditGym = () => {
           membershipPrice: String(gym.membershipPrice),
         })
         setSelectedAmenities(gym.amenities || [])
+        setImages(gym.images || [])
+        setImagePreview(gym.images || [])
         if (gym.location?.coordinates) {
           setLocation({
             lat: gym.location.coordinates[1],
@@ -73,6 +79,25 @@ const EditGym = () => {
     )
   }
 
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files)
+    setImageLoading(true)
+    try {
+      const formData = new FormData()
+      files.forEach(file => formData.append('images', file))
+      const response = await axios.post('http://localhost:3000/api/gyms/upload', formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setImages(response.data.urls)
+      setImagePreview(files.map(file => URL.createObjectURL(file)))
+    } catch (err) {
+      setError('Image upload failed')
+    } finally {
+      setImageLoading(false)
+    }
+  }
+
   const toggleAmenity = (amenity) => {
     setSelectedAmenities(prev =>
       prev.includes(amenity)
@@ -87,6 +112,7 @@ const EditGym = () => {
       await axiosInstance.put(`/gyms/${id}`, {
         ...data,
         amenities: selectedAmenities,
+        images,
         ...(location && { lat: location.lat, lng: location.lng })
       })
       navigate('/dashboard')
@@ -109,36 +135,42 @@ const EditGym = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
+        {/* Title */}
         <div className="form-control">
           <label className="label"><span className="label-text">Gym Name</span></label>
           <input type="text" className={`input input-bordered ${errors.title ? 'input-error' : ''}`} {...register('title')} />
           {errors.title && <span className="text-error text-sm mt-1">{errors.title.message}</span>}
         </div>
 
+        {/* Address */}
         <div className="form-control">
           <label className="label"><span className="label-text">Address</span></label>
           <input type="text" className={`input input-bordered ${errors.address ? 'input-error' : ''}`} {...register('address')} />
           {errors.address && <span className="text-error text-sm mt-1">{errors.address.message}</span>}
         </div>
 
+        {/* Email */}
         <div className="form-control">
           <label className="label"><span className="label-text">Gym Email</span></label>
           <input type="email" className={`input input-bordered ${errors.emailId ? 'input-error' : ''}`} {...register('emailId')} />
           {errors.emailId && <span className="text-error text-sm mt-1">{errors.emailId.message}</span>}
         </div>
 
+        {/* Contact */}
         <div className="form-control">
           <label className="label"><span className="label-text">Contact Number</span></label>
           <input type="text" className={`input input-bordered ${errors.contact ? 'input-error' : ''}`} {...register('contact')} />
           {errors.contact && <span className="text-error text-sm mt-1">{errors.contact.message}</span>}
         </div>
 
+        {/* Membership Price */}
         <div className="form-control">
           <label className="label"><span className="label-text">Membership Price (₹/month)</span></label>
           <input type="number" className={`input input-bordered ${errors.membershipPrice ? 'input-error' : ''}`} {...register('membershipPrice')} />
           {errors.membershipPrice && <span className="text-error text-sm mt-1">{errors.membershipPrice.message}</span>}
         </div>
 
+        {/* Amenities */}
         <div className="form-control">
           <label className="label"><span className="label-text">Amenities</span></label>
           <div className="flex flex-wrap gap-2">
@@ -155,6 +187,27 @@ const EditGym = () => {
           </div>
         </div>
 
+        {/* Images */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Gym Images</span></label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="file-input file-input-bordered w-full"
+            onChange={handleImageUpload}
+          />
+          {imageLoading && <p className="text-sm mt-1">Uploading images...</p>}
+          {imagePreview.length > 0 && (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {imagePreview.map((url, i) => (
+                <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg" />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Location */}
         <div className="form-control">
           <label className="label"><span className="label-text">Gym Location</span></label>
           <button

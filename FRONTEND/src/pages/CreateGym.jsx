@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
+import axios from 'axios'
 
 const gymSchema = z.object({
   title: z.string().min(3, "Minimum 3 characters").max(50, "Maximum 50 characters"),
@@ -20,6 +21,9 @@ const CreateGym = () => {
   const [location, setLocation] = useState(null)
   const [selectedAmenities, setSelectedAmenities] = useState([])
   const [locationLoading, setLocationLoading] = useState(false)
+  const [images, setImages] = useState([])
+  const [imageLoading, setImageLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState([])
   const navigate = useNavigate()
 
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -36,11 +40,30 @@ const CreateGym = () => {
         })
         setLocationLoading(false)
       },
-      (err) => {
+      () => {
         setError("Location access denied")
         setLocationLoading(false)
       }
     )
+  }
+
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files)
+    setImageLoading(true)
+    try {
+      const formData = new FormData()
+      files.forEach(file => formData.append('images', file))
+      const response = await axios.post('http://localhost:3000/api/gyms/upload', formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setImages(response.data.urls)
+      setImagePreview(files.map(file => URL.createObjectURL(file)))
+    } catch (err) {
+      setError('Image upload failed')
+    } finally {
+      setImageLoading(false)
+    }
   }
 
   const toggleAmenity = (amenity) => {
@@ -61,6 +84,7 @@ const CreateGym = () => {
       await axiosInstance.post('/gyms', {
         ...data,
         amenities: selectedAmenities,
+        images,
         lat: location.lat,
         lng: location.lng
       })
@@ -134,11 +158,35 @@ const CreateGym = () => {
           </div>
         </div>
 
+        {/* Images */}
+        <div className="form-control">
+          <label className="label"><span className="label-text">Gym Images</span></label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="file-input file-input-bordered w-full"
+            onChange={handleImageUpload}
+          />
+          {imageLoading && <p className="text-sm mt-1">Uploading images...</p>}
+          {imagePreview.length > 0 && (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {imagePreview.map((url, i) => (
+                <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg" />
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Location */}
         <div className="form-control">
           <label className="label"><span className="label-text">Gym Location</span></label>
-          <button type="button" onClick={handleGetLocation} className={`btn btn-outline ${locationLoading ? 'loading' : ''}`}>
-            📍 {location ? `Location Set ✅` : 'Use My Current Location'}
+          <button
+            type="button"
+            onClick={handleGetLocation}
+            className={`btn btn-outline ${locationLoading ? 'loading' : ''}`}
+          >
+            📍 {location ? 'Location Set ✅' : 'Use My Current Location'}
           </button>
         </div>
 
