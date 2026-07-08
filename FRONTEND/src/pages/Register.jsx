@@ -37,84 +37,105 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title justify-center text-3xl mb-6">GymFinder</h2>
+    <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
+
+      {/* Left Side — Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+
+          {/* Logo for mobile */}
+          <div className="lg:hidden text-center mb-8">
+            <h1 className="text-4xl font-bold" style={{ color: '#D4AF37' }}>GymFinder</h1>
+          </div>
+
+          <h2 className="text-3xl font-bold text-white mb-2">Create account</h2>
+          <p className="text-gray-400 mb-8">Join thousands finding their perfect gym</p>
 
           {error && (
-            <div className="alert alert-error text-sm mb-4">
-              <span>{error}</span>
+            <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+              {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
 
             {/* First Name */}
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">First Name</span>
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">First Name</label>
               <input
                 type="text"
                 placeholder="John"
-                className={`input input-bordered w-full ${errors.firstName ? 'input-error' : ''}`}
+                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 border focus:outline-none transition-all"
+                style={{
+                  backgroundColor: '#1a1a1a',
+                  borderColor: errors.firstName ? '#ef4444' : '#333',
+                }}
                 {...register('firstName')}
               />
               {errors.firstName && (
-                <span className="text-error text-sm mt-1">{errors.firstName.message}</span>
+                <p className="text-red-400 text-sm mt-1">{errors.firstName.message}</p>
               )}
             </div>
 
             {/* Email */}
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
               <input
                 type="email"
                 placeholder="john@example.com"
-                className={`input input-bordered w-full ${errors.emailId ? 'input-error' : ''}`}
+                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 border focus:outline-none transition-all"
+                style={{
+                  backgroundColor: '#1a1a1a',
+                  borderColor: errors.emailId ? '#ef4444' : '#333',
+                }}
                 {...register('emailId')}
               />
               {errors.emailId && (
-                <span className="text-error text-sm mt-1">{errors.emailId.message}</span>
+                <p className="text-red-400 text-sm mt-1">{errors.emailId.message}</p>
               )}
             </div>
 
             {/* Role */}
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">I am a</span>
-              </label>
-              <select
-                className={`select select-bordered w-full ${errors.role ? 'select-error' : ''}`}
-                {...register('role')}
-              >
-                <option value="seeker">Seeker</option>
-                <option value="owner">Owner</option>
-              </select>
-              {errors.role && (
-                <span className="text-error text-sm mt-1">{errors.role.message}</span>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">I am a</label>
+              <div className="grid grid-cols-2 gap-3">
+                <label
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition-all"
+                  style={{ backgroundColor: '#1a1a1a', borderColor: '#333' }}
+                >
+                  <input type="radio" value="seeker" {...register('role')} className="hidden" />
+                  <span className="text-2xl">🏃</span>
+                  <span className="text-white font-medium">Seeker</span>
+                </label>
+                <label
+                  className="flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition-all"
+                  style={{ backgroundColor: '#1a1a1a', borderColor: '#333' }}
+                >
+                  <input type="radio" value="owner" {...register('role')} className="hidden" />
+                  <span className="text-2xl">🏋️</span>
+                  <span className="text-white font-medium">Owner</span>
+                </label>
+              </div>
             </div>
 
             {/* Password */}
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
-                  className={`input input-bordered w-full pr-10 ${errors.password ? 'input-error' : ''}`}
+                  className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 border focus:outline-none transition-all pr-12"
+                  style={{
+                    backgroundColor: '#1a1a1a',
+                    borderColor: errors.password ? '#ef4444' : '#333',
+                  }}
                   {...register('password')}
                 />
                 <button
                   type="button"
-                  className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
                   {showPassword ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -129,29 +150,50 @@ function Register() {
                 </button>
               </div>
               {errors.password && (
-                <span className="text-error text-sm mt-1">{errors.password.message}</span>
+                <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
               )}
             </div>
 
-            <div className="form-control mt-8">
-              <button type="submit" className="btn btn-primary w-full">
-                Register
-              </button>
-            </div>
+            {/* Submit */}
+            <button
+              type="submit"
+              className="w-full py-3 rounded-lg font-bold text-black transition-all hover:opacity-90 mt-2"
+              style={{ backgroundColor: '#D4AF37' }}
+            >
+              Create Account
+            </button>
+
           </form>
 
-          <div className="text-center mt-6">
-            <span className="text-sm">
-              Already have an account?{' '}
-              <NavLink to="/login" className="link link-primary">
-                Sign in
-              </NavLink>
-            </span>
-          </div>
+          <p className="text-center text-gray-400 mt-6 text-sm">
+            Already have an account?{' '}
+            <NavLink to="/login" className="font-medium hover:opacity-80 transition-colors" style={{ color: '#D4AF37' }}>
+              Sign in
+            </NavLink>
+          </p>
+
         </div>
       </div>
+
+      {/* Right Side — Image */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800"
+          alt="gym"
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-l from-black to-transparent" />
+        <div className="relative z-10 flex flex-col justify-end p-12 text-white">
+          <h1 className="text-5xl font-bold mb-4" style={{ color: '#D4AF37' }}>
+            GymFinder
+          </h1>
+          <p className="text-xl text-gray-300 mb-2">Your fitness journey starts here.</p>
+          <p className="text-gray-400">Join as a seeker or list your gym today.</p>
+        </div>
+      </div>
+
     </div>
-  );
+  )
 }
 
 export default Register;
