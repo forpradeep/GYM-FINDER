@@ -27,26 +27,39 @@ const createGym = async (req, res) => {
 
 const getAllGyms = async (req, res) => {
     try {
-        const { lat, lng, radius } = req.query;
+        const { lat, lng, radius, search } = req.query;
 
-        if (!lat || !lng) {
-            const gyms = await Gym.find({});
+        // text search
+        if (search) {
+            const gyms = await Gym.find({
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { address: { $regex: search, $options: 'i' } }
+                ]
+            });
             return res.status(200).json({ gyms });
         }
 
-        const gyms = await Gym.find({
-            location: {
-                $near: {
-                    $geometry: {
-                        type: "Point",
-                        coordinates: [parseFloat(lng), parseFloat(lat)]
-                    },
-                    $maxDistance: (radius ? parseFloat(radius) : 5) * 1000
+        // geospatial search
+        if (lat && lng) {
+            const gyms = await Gym.find({
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [parseFloat(lng), parseFloat(lat)]
+                        },
+                        $maxDistance: (radius ? parseFloat(radius) : 5) * 1000
+                    }
                 }
-            }
-        });
+            });
+            return res.status(200).json({ gyms });
+        }
 
+        // return all
+        const gyms = await Gym.find({});
         res.status(200).json({ gyms });
+
     } catch (err) {
         res.status(400).send('Error: ' + err.message);
     }
