@@ -6,6 +6,8 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { login } from '../store/authSlice';
 import { useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const registerSchema = z.object({
   firstName: z.string().min(3, "Minimum 3 characters required"),
@@ -20,10 +22,12 @@ function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { role: 'seeker' }
   });
+
+  const selectedRole = watch('role')
 
   const onSubmit = async (data) => {
     try {
@@ -37,13 +41,12 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f5f5f5' }}>
 
       {/* Left Side — Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
 
-          {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
             <h1 className="text-4xl font-bold" style={{ color: '#D4AF37' }}>GymFinder</h1>
           </div>
@@ -101,19 +104,27 @@ function Register() {
               <div className="grid grid-cols-2 gap-3">
                 <label
                   className="flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition-all"
-                  style={{ backgroundColor: '#1a1a1a', borderColor: '#333' }}
+                  style={{
+                    backgroundColor: selectedRole === 'seeker' ? '#D4AF37' : '#1a1a1a',
+                    borderColor: selectedRole === 'seeker' ? '#D4AF37' : '#333',
+                    color: selectedRole === 'seeker' ? '#000' : '#fff'
+                  }}
                 >
                   <input type="radio" value="seeker" {...register('role')} className="hidden" />
                   <span className="text-2xl">🏃</span>
-                  <span className="text-white font-medium">Seeker</span>
+                  <span className="font-medium">Seeker</span>
                 </label>
                 <label
                   className="flex items-center justify-center gap-2 p-3 rounded-lg border cursor-pointer transition-all"
-                  style={{ backgroundColor: '#1a1a1a', borderColor: '#333' }}
+                  style={{
+                    backgroundColor: selectedRole === 'owner' ? '#D4AF37' : '#1a1a1a',
+                    borderColor: selectedRole === 'owner' ? '#D4AF37' : '#333',
+                    color: selectedRole === 'owner' ? '#000' : '#fff'
+                  }}
                 >
                   <input type="radio" value="owner" {...register('role')} className="hidden" />
                   <span className="text-2xl">🏋️</span>
-                  <span className="text-white font-medium">Owner</span>
+                  <span className="font-medium">Owner</span>
                 </label>
               </div>
             </div>
@@ -184,9 +195,7 @@ function Register() {
         />
         <div className="absolute inset-0 bg-gradient-to-l from-black to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12 text-white">
-          <h1 className="text-5xl font-bold mb-4" style={{ color: '#D4AF37' }}>
-            GymFinder
-          </h1>
+          <h1 className="text-5xl font-bold mb-4" style={{ color: '#D4AF37' }}>GymFinder</h1>
           <p className="text-xl text-gray-300 mb-2">Your fitness journey starts here.</p>
           <p className="text-gray-400">Join as a seeker or list your gym today.</p>
         </div>

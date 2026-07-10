@@ -3,6 +3,8 @@ import axiosInstance from '../utils/axiosInstance'
 import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { geocodeAddress, getAddressSuggestions } from '../utils/geocode'
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const Home = () => {
   const [gyms, setGyms] = useState([])

@@ -10,6 +10,7 @@
     "mongoose": "^9.7.2",
     "multer": "^2.2.0",
     "react-router-dom": "^7.18.1",
+    "redux-persist": "^6.0.0",
     "validator": "^13.15.35"
   },
   "name": "gym-finder",

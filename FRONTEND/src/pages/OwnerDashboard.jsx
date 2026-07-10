@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const OwnerDashboard = () => {
   const [gyms, setGyms] = useState([])
@@ -32,7 +34,7 @@ const OwnerDashboard = () => {
   }
 
   if (loading) return (
-    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f5f5f5' }}>
       <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
   )

@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
 import axios from 'axios'
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const gymSchema = z.object({
   title: z.string().min(3, "Minimum 3 characters").max(50, "Maximum 50 characters"),

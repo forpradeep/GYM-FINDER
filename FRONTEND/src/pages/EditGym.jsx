@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
 import axios from 'axios'
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const gymSchema = z.object({
   title: z.string().min(3, "Minimum 3 characters").max(50, "Maximum 50 characters"),
@@ -121,118 +123,207 @@ const EditGym = () => {
     }
   }
 
-  if (loading) return <p className="text-center p-4">Loading...</p>
+  const inputStyle = {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#333',
+    color: 'white'
+  }
+
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f5f5f5' }}>
+      <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Edit Gym</h1>
+    <div style={{ backgroundColor: '#0a0a0a', minHeight: '100vh' }}>
 
-      {error && (
-        <div className="alert alert-error mb-4">
-          <span>{error}</span>
+      {/* Header */}
+      <div className="px-8 py-8" style={{ borderBottom: '1px solid #222' }}>
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold text-white">Edit Gym</h1>
+          <p className="text-gray-400 mt-1">Update your gym details</p>
         </div>
-      )}
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <div className="max-w-3xl mx-auto px-8 py-10">
 
-        {/* Title */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Gym Name</span></label>
-          <input type="text" className={`input input-bordered ${errors.title ? 'input-error' : ''}`} {...register('title')} />
-          {errors.title && <span className="text-error text-sm mt-1">{errors.title.message}</span>}
-        </div>
-
-        {/* Address */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Address</span></label>
-          <input type="text" className={`input input-bordered ${errors.address ? 'input-error' : ''}`} {...register('address')} />
-          {errors.address && <span className="text-error text-sm mt-1">{errors.address.message}</span>}
-        </div>
-
-        {/* Email */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Gym Email</span></label>
-          <input type="email" className={`input input-bordered ${errors.emailId ? 'input-error' : ''}`} {...register('emailId')} />
-          {errors.emailId && <span className="text-error text-sm mt-1">{errors.emailId.message}</span>}
-        </div>
-
-        {/* Contact */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Contact Number</span></label>
-          <input type="text" className={`input input-bordered ${errors.contact ? 'input-error' : ''}`} {...register('contact')} />
-          {errors.contact && <span className="text-error text-sm mt-1">{errors.contact.message}</span>}
-        </div>
-
-        {/* Membership Price */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Membership Price (₹/month)</span></label>
-          <input type="number" className={`input input-bordered ${errors.membershipPrice ? 'input-error' : ''}`} {...register('membershipPrice')} />
-          {errors.membershipPrice && <span className="text-error text-sm mt-1">{errors.membershipPrice.message}</span>}
-        </div>
-
-        {/* Amenities */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Amenities</span></label>
-          <div className="flex flex-wrap gap-2">
-            {AMENITIES.map((amenity) => (
-              <button
-                key={amenity}
-                type="button"
-                onClick={() => toggleAmenity(amenity)}
-                className={`btn btn-sm ${selectedAmenities.includes(amenity) ? 'btn-primary' : 'btn-outline'}`}
-              >
-                {amenity}
-              </button>
-            ))}
+        {error && (
+          <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+            {error}
           </div>
-        </div>
+        )}
 
-        {/* Images */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Gym Images</span></label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            className="file-input file-input-bordered w-full"
-            onChange={handleImageUpload}
-          />
-          {imageLoading && <p className="text-sm mt-1">Uploading images...</p>}
-          {imagePreview.length > 0 && (
-            <div className="flex gap-2 mt-2 flex-wrap">
-              {imagePreview.map((url, i) => (
-                <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg" />
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Gym Name</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-all"
+              style={{ ...inputStyle, borderColor: errors.title ? '#ef4444' : '#333' }}
+              {...register('title')}
+            />
+            {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title.message}</p>}
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Address</label>
+            <input
+              type="text"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-all"
+              style={{ ...inputStyle, borderColor: errors.address ? '#ef4444' : '#333' }}
+              {...register('address')}
+            />
+            {errors.address && <p className="text-red-400 text-sm mt-1">{errors.address.message}</p>}
+          </div>
+
+          {/* Email + Contact */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Gym Email</label>
+              <input
+                type="email"
+                className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-all"
+                style={{ ...inputStyle, borderColor: errors.emailId ? '#ef4444' : '#333' }}
+                {...register('emailId')}
+              />
+              {errors.emailId && <p className="text-red-400 text-sm mt-1">{errors.emailId.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Contact Number</label>
+              <input
+                type="text"
+                className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-all"
+                style={{ ...inputStyle, borderColor: errors.contact ? '#ef4444' : '#333' }}
+                {...register('contact')}
+              />
+              {errors.contact && <p className="text-red-400 text-sm mt-1">{errors.contact.message}</p>}
+            </div>
+          </div>
+
+          {/* Membership Price */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Membership Price (₹/month)</label>
+            <input
+              type="number"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-all"
+              style={{ ...inputStyle, borderColor: errors.membershipPrice ? '#ef4444' : '#333' }}
+              {...register('membershipPrice')}
+            />
+            {errors.membershipPrice && <p className="text-red-400 text-sm mt-1">{errors.membershipPrice.message}</p>}
+          </div>
+
+          {/* Amenities */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-3">Amenities</label>
+            <div className="flex flex-wrap gap-3">
+              {AMENITIES.map((amenity) => (
+                <button
+                  key={amenity}
+                  type="button"
+                  onClick={() => toggleAmenity(amenity)}
+                  className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: selectedAmenities.includes(amenity) ? '#D4AF37' : '#1a1a1a',
+                    color: selectedAmenities.includes(amenity) ? '#000' : '#D4AF37',
+                    border: '1px solid #D4AF37'
+                  }}
+                >
+                  {amenity}
+                </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Location */}
-        <div className="form-control">
-          <label className="label"><span className="label-text">Gym Location</span></label>
-          <button
-            type="button"
-            onClick={handleGetLocation}
-            className={`btn btn-outline ${locationLoading ? 'loading' : ''}`}
-          >
-            📍 {location ? 'Location Set ✅' : 'Update Location'}
-          </button>
-        </div>
+          {/* Images */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Gym Images</label>
+            {imagePreview.length > 0 && (
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {imagePreview.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    className="h-20 w-20 object-cover rounded-lg"
+                    style={{ border: '1px solid #D4AF37' }}
+                  />
+                ))}
+              </div>
+            )}
+            <label
+              className="flex flex-col items-center justify-center w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-all hover:border-yellow-500"
+              style={{ borderColor: '#333', backgroundColor: '#1a1a1a' }}
+            >
+              <div className="flex flex-col items-center">
+                <span className="text-2xl mb-1">📸</span>
+                <p className="text-gray-400 text-sm">Click to update gym photos</p>
+              </div>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </label>
+            {imageLoading && (
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-400 text-sm">Uploading images...</p>
+              </div>
+            )}
+          </div>
 
-        <div className="flex gap-4 mt-4">
-          <button type="submit" className="btn btn-primary flex-1">
-            Save Changes
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="btn btn-outline flex-1"
-          >
-            Cancel
-          </button>
-        </div>
+          {/* Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Gym Location</label>
+            <button
+              type="button"
+              onClick={handleGetLocation}
+              className="w-full py-3 rounded-lg font-medium transition-all hover:opacity-80"
+              style={{
+                backgroundColor: location ? '#1a2a1a' : '#1a1a1a',
+                border: `1px solid ${location ? '#22c55e' : '#333'}`,
+                color: location ? '#22c55e' : '#D4AF37'
+              }}
+            >
+              {locationLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+                  Getting location...
+                </span>
+              ) : location ? (
+                '📍 Location Set ✅'
+              ) : (
+                '📍 Update Location'
+              )}
+            </button>
+          </div>
 
-      </form>
+          {/* Buttons */}
+          <div className="flex gap-4 mt-4">
+            <button
+              type="submit"
+              className="flex-1 py-4 rounded-lg font-bold text-black text-lg transition-all hover:opacity-90"
+              style={{ backgroundColor: '#D4AF37' }}
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="flex-1 py-4 rounded-lg font-bold transition-all hover:opacity-80"
+              style={{ border: '1px solid #333', color: '#888' }}
+            >
+              Cancel
+            </button>
+          </div>
+
+        </form>
+      </div>
     </div>
   )
 }

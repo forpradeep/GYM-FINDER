@@ -6,6 +6,8 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { login } from '../store/authSlice';
 import { useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
+import { useTheme } from '../context/ThemeContext'
+const { theme } = useTheme()
 
 const loginSchema = z.object({
   emailId: z.string().email("Invalid Email"),
@@ -34,7 +36,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#0a0a0a' }}>
+    <div className="min-h-screen flex" style={{ backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f5f5f5' }}>
 
       {/* Left Side — Image + Quote */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden">
