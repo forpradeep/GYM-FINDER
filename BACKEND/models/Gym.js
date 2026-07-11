@@ -6,16 +6,25 @@ const GymSchema = new Schema({
     address: { type: String, minLength: 3, maxLength: 200 },
     emailId: { type: String, required: true, unique: true, trim: true, lowercase: true },
     contact: { type: Number },
-    membershipPrice: { type: Number },
+    membershipPrice: { type: Number }, // kept for backwards compatibility
+    subscriptionPlans: [
+        {
+            type: { type: String, enum: ['monthly', '3months', '6months', 'yearly'] },
+            price: { type: Number }
+        }
+    ],
     images: [String],
     amenities: [String],
     location: {
         type: { type: String, default: 'Point' },
         coordinates: [Number]
     },
-    ownerId: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+    ownerId: { type: Schema.Types.ObjectId, ref: 'User' },
+    socialLinks: {
+        instagram: { type: String, default: '' },
+        facebook: { type: String, default: '' },
+        twitter: { type: String, default: '' },
+        youtube: { type: String, default: '' }
     }
 }, { timestamps: true });
 
