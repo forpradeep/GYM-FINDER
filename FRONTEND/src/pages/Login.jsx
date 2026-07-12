@@ -7,7 +7,7 @@ import { login } from '../store/authSlice';
 import { useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import { useTheme } from '../context/ThemeContext'
-const { theme } = useTheme()
+
 
 const loginSchema = z.object({
   emailId: z.string().email("Invalid Email"),
@@ -15,6 +15,7 @@ const loginSchema = z.object({
 });
 
 function Login() {
+  const { theme } = useTheme()
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();

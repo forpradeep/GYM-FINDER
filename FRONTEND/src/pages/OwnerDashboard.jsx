@@ -2,12 +2,21 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
 import { useTheme } from '../context/ThemeContext'
-const { theme } = useTheme()
 
 const OwnerDashboard = () => {
   const [gyms, setGyms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const { theme } = useTheme()
+
+  const bg = theme === 'dark' ? '#000f0f' : '#f0ffff'
+  const cardBg = theme === 'dark' ? '#002525' : '#ffffff'
+  const cardBorder = theme === 'dark' ? '#005555' : '#b0e0e0'
+  const textPrimary = theme === 'dark' ? '#ffffff' : '#111111'
+  const textSecondary = theme === 'dark' ? '#9ca3af' : '#6b7280'
+  const inputBg = theme === 'dark' ? '#00000f' : '#f0f0ff'
+  const inputBorder = theme === 'dark' ? '#1a1a5a' : '#c0c0ff'
+  const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
 
   useEffect(() => {
     const fetchOwnerGyms = async () => {
@@ -34,23 +43,22 @@ const OwnerDashboard = () => {
   }
 
   if (loading) return (
-    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: theme === 'dark' ? '#0a0a0a' : '#f5f5f5' }}>
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: bg }}>
       <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
   )
 
   return (
-    <div style={{ backgroundColor: '#0a0a0a', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: bg, minHeight: '100vh' }}>
 
       {/* Header */}
-      <div
-        className="px-8 py-8"
-        style={{ borderBottom: '1px solid #222' }}
-      >
+      <div className="px-8 py-8" style={{ borderBottom: `1px solid ${cardBorder}` }}>
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-4xl font-bold text-white">My Gyms</h1>
-            <p className="text-gray-400 mt-1">{gyms.length} listing{gyms.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-4xl font-bold" style={{ color: textPrimary }}>My Gyms</h1>
+            <p className="mt-1" style={{ color: textSecondary }}>
+              {gyms.length} listing{gyms.length !== 1 ? 's' : ''}
+            </p>
           </div>
           <NavLink
             to="/gym/create"
@@ -73,8 +81,8 @@ const OwnerDashboard = () => {
         {gyms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32">
             <span className="text-8xl mb-6">🏋️</span>
-            <h2 className="text-2xl font-bold text-white mb-2">No gyms listed yet</h2>
-            <p className="text-gray-400 mb-8">Start by listing your first gym</p>
+            <h2 className="text-2xl font-bold mb-2" style={{ color: textPrimary }}>No gyms listed yet</h2>
+            <p className="mb-8" style={{ color: textSecondary }}>Start by listing your first gym</p>
             <NavLink
               to="/gym/create"
               className="px-8 py-4 rounded-lg font-bold text-black transition-all hover:opacity-90"
@@ -89,11 +97,11 @@ const OwnerDashboard = () => {
               <div
                 key={gym._id}
                 className="rounded-xl overflow-hidden transition-all hover:scale-105"
-                style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+                style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
               >
                 {/* Image */}
                 <NavLink to={`/gym/${gym._id}`}>
-                  <div className="h-48 overflow-hidden bg-gray-800">
+                  <div className="h-48 overflow-hidden" style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#e5e5e5' }}>
                     {gym.images?.length > 0 ? (
                       <img
                         src={gym.images[0]}
@@ -111,11 +119,14 @@ const OwnerDashboard = () => {
                 {/* Info */}
                 <div className="p-5">
                   <NavLink to={`/gym/${gym._id}`}>
-                    <h2 className="text-xl font-bold text-white hover:text-yellow-400 transition-colors mb-1">
+                    <h2
+                      className="text-xl font-bold hover:text-yellow-400 transition-colors mb-1"
+                      style={{ color: textPrimary }}
+                    >
                       {gym.title}
                     </h2>
                   </NavLink>
-                  <p className="text-gray-400 text-sm mb-2">📍 {gym.address}</p>
+                  <p className="text-sm mb-2" style={{ color: textSecondary }}>📍 {gym.address}</p>
                   <p className="font-bold mb-3" style={{ color: '#D4AF37' }}>
                     ₹{gym.membershipPrice}/month
                   </p>
@@ -127,13 +138,16 @@ const OwnerDashboard = () => {
                         <span
                           key={i}
                           className="px-2 py-1 rounded-full text-xs"
-                          style={{ backgroundColor: '#2a2a2a', color: '#D4AF37' }}
+                          style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0', color: '#D4AF37' }}
                         >
                           {amenity}
                         </span>
                       ))}
                       {gym.amenities.length > 3 && (
-                        <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: '#2a2a2a', color: '#888' }}>
+                        <span
+                          className="px-2 py-1 rounded-full text-xs"
+                          style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0', color: textSecondary }}
+                        >
                           +{gym.amenities.length - 3} more
                         </span>
                       )}
@@ -141,16 +155,25 @@ const OwnerDashboard = () => {
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-3 mt-2">
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <NavLink
+                      to={`/gym/${gym._id}/members`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 py-2 rounded-lg text-center text-sm font-medium transition-all hover:opacity-80"
+                      style={{ border: '1px solid #60a5fa', color: '#60a5fa' }}
+                    >
+                      👥 Members
+                    </NavLink>
                     <NavLink
                       to={`/gym/edit/${gym._id}`}
+                      onClick={(e) => e.stopPropagation()}
                       className="flex-1 py-2 rounded-lg text-center text-sm font-medium transition-all hover:opacity-80"
-                      style={{ border: '1px solid #D4AF37', color: '#D4AF37' }}
+                      style={{ border: `1px solid #D4AF37`, color: '#D4AF37' }}
                     >
                       Edit
                     </NavLink>
                     <button
-                      onClick={() => handleDelete(gym._id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(gym._id) }}
                       className="flex-1 py-2 rounded-lg text-sm font-medium transition-all hover:opacity-80"
                       style={{ border: '1px solid #ef4444', color: '#ef4444' }}
                     >

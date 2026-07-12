@@ -24,6 +24,8 @@ const reviewRouter = require('./routes/reviews');
 const favouriteRouter = require('./routes/favourites');
 const userRouter = require('./routes/users');
 const memberRouter = require('./routes/members');
+const settingsRouter = require('./routes/settings')
+app.use('/api/settings', settingsRouter)
 
 app.use('/api/auth', authRouter);
 app.use('/api/gyms', gymRouter);

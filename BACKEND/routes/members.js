@@ -15,36 +15,43 @@ const getEndDate = (startDate, subscriptionType) => {
     return date;
 }
 
-// GET /api/members/:gymId — get all members of a gym
-memberRouter.get('/:gymId', authMiddleware, roleMiddleware, async (req, res) => {
+// ✅ Specific routes FIRST
+memberRouter.get('/my-memberships', authMiddleware, async (req, res) => {
     try {
-        const members = await Member.find({ gymId: req.params.gymId })
+        const members = await Member.find({ phone: req.result.emailId })
+            .populate('gymId', 'title address images membershipPrice subscriptionPlans')
             .sort({ createdAt: -1 })
         res.status(200).json({ members })
     } catch (err) {
         res.status(400).send('Error: ' + err.message)
     }
 })
-// POST /api/members/enrol/:gymId — seeker enrolls themselves
+
+memberRouter.delete('/cancel/:memberId', authMiddleware, async (req, res) => {
+    try {
+        const member = await Member.findById(req.params.memberId)
+        if (!member) throw new Error('Membership not found')
+        if (member.phone !== req.result.emailId) throw new Error('Not authorized')
+        await Member.findByIdAndDelete(req.params.memberId)
+        res.status(200).json({ message: 'Membership cancelled successfully' })
+    } catch (err) {
+        res.status(400).send('Error: ' + err.message)
+    }
+})
+
 memberRouter.post('/enrol/:gymId', authMiddleware, async (req, res) => {
     try {
-        const { subscriptionType } = req.body
+        const { subscriptionType, ownerId } = req.body
         const start = new Date()
         const endDate = getEndDate(start, subscriptionType)
-
-        // check if already enrolled
         const existing = await Member.findOne({
             gymId: req.params.gymId,
-            phone: req.result.emailId // using email as identifier for app users
+            phone: req.result.emailId
         })
-
-        if (existing) {
-            return res.status(400).send('Error: Already enrolled in this gym')
-        }
-
+        if (existing) return res.status(400).send('Error: Already enrolled in this gym')
         const member = await Member.create({
             gymId: req.params.gymId,
-            ownerId: req.body.ownerId,
+            ownerId,
             name: req.result.firstName,
             phone: req.result.emailId,
             address: '',
@@ -52,26 +59,31 @@ memberRouter.post('/enrol/:gymId', authMiddleware, async (req, res) => {
             startDate: start,
             endDate
         })
-
         res.status(201).json({ member, message: 'Enrolled successfully!' })
     } catch (err) {
         res.status(400).send('Error: ' + err.message)
     }
 })
 
-// POST /api/members/:gymId — add a member
+memberRouter.get('/:gymId', authMiddleware, roleMiddleware, async (req, res) => {
+    try {
+        const members = await Member.find({ gymId: req.params.gymId }).sort({ createdAt: -1 })
+        res.status(200).json({ members })
+    } catch (err) {
+        res.status(400).send('Error: ' + err.message)
+    }
+})
+
 memberRouter.post('/:gymId', authMiddleware, roleMiddleware, async (req, res) => {
     try {
         const { name, phone, address, subscriptionType, startDate } = req.body
         const start = startDate ? new Date(startDate) : new Date()
         const endDate = getEndDate(start, subscriptionType)
-
         const member = await Member.create({
             gymId: req.params.gymId,
             ownerId: req.result._id,
             name, phone, address, subscriptionType,
-            startDate: start,
-            endDate
+            startDate: start, endDate
         })
         res.status(201).json({ member, message: 'Member added successfully' })
     } catch (err) {
@@ -79,7 +91,6 @@ memberRouter.post('/:gymId', authMiddleware, roleMiddleware, async (req, res) =>
     }
 })
 
-// PUT /api/members/:memberId — update member
 memberRouter.put('/:memberId', authMiddleware, roleMiddleware, async (req, res) => {
     try {
         const member = await Member.findByIdAndUpdate(req.params.memberId, req.body, { new: true })
@@ -89,7 +100,6 @@ memberRouter.put('/:memberId', authMiddleware, roleMiddleware, async (req, res) 
     }
 })
 
-// DELETE /api/members/:memberId — remove member
 memberRouter.delete('/:memberId', authMiddleware, roleMiddleware, async (req, res) => {
     try {
         await Member.findByIdAndDelete(req.params.memberId)

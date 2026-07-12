@@ -7,7 +7,7 @@ import { login } from '../store/authSlice';
 import { useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import { useTheme } from '../context/ThemeContext'
-const { theme } = useTheme()
+
 
 const registerSchema = z.object({
   firstName: z.string().min(3, "Minimum 3 characters required"),
@@ -17,6 +17,7 @@ const registerSchema = z.object({
 });
 
 function Register() {
+  const { theme } = useTheme()
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();

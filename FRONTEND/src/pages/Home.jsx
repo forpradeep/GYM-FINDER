@@ -1,12 +1,13 @@
+import { useTheme } from '../context/ThemeContext'
 import { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosInstance'
 import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { geocodeAddress, getAddressSuggestions } from '../utils/geocode'
-import { useTheme } from '../context/ThemeContext'
-const { theme } = useTheme()
+
 
 const Home = () => {
+  const { theme } = useTheme()
   const [gyms, setGyms] = useState([])
   const [loading, setLoading] = useState(true)
   const [locationError, setLocationError] = useState(null)

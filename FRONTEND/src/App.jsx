@@ -9,12 +9,37 @@ import CreateGym from './pages/CreateGym'
 import EditGym from './pages/EditGym'
 import Navbar from './components/navbar'
 import ProtectedRoute from './components/ProtectedRoute'
+import Profile from './pages/Profile'
+import Members from './pages/Members'
+import Settings from './pages/Settings'
+
+
+
+
+
 
 function App() {
   return (
     <>
       <Navbar />
       <Routes>
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
+
+        // add this route
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+        <Route path="/gym/:gymId/members" element={
+          <ProtectedRoute allowedRole="owner">
+            <Members />
+          </ProtectedRoute>
+        } />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
