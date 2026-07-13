@@ -170,7 +170,6 @@ const EditGym = () => {
     }
   }
 
-  const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
 
   const getPlanLabel = (type) => ({
     monthly: '1 Month', '3months': '3 Months',

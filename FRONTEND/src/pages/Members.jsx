@@ -88,11 +88,6 @@ const Members = () => {
 
   const isExpired = (endDate) => new Date(endDate) < new Date()
 
-  const inputStyle = {
-    backgroundColor: inputBg,
-    borderColor: inputBorder,
-    color: textPrimary
-  }
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: bg }}>

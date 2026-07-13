@@ -7,6 +7,7 @@ const OwnerDashboard = () => {
   const [gyms, setGyms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [totalMembers, setTotalMembers] = useState(0)
   const { theme } = useTheme()
 
   const bg = theme === 'dark' ? '#000f0f' : '#f0ffff'
@@ -14,15 +15,21 @@ const OwnerDashboard = () => {
   const cardBorder = theme === 'dark' ? '#005555' : '#b0e0e0'
   const textPrimary = theme === 'dark' ? '#ffffff' : '#111111'
   const textSecondary = theme === 'dark' ? '#9ca3af' : '#6b7280'
-  const inputBg = theme === 'dark' ? '#00000f' : '#f0f0ff'
-  const inputBorder = theme === 'dark' ? '#1a1a5a' : '#c0c0ff'
-  const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
 
   useEffect(() => {
     const fetchOwnerGyms = async () => {
       try {
         const response = await axiosInstance.get('/gyms/owner')
         setGyms(response.data.gyms)
+
+        let memberCount = 0
+        for (const gym of response.data.gyms) {
+          try {
+            const memberRes = await axiosInstance.get(`/members/${gym._id}`)
+            memberCount += memberRes.data.members.length
+          } catch (err) {}
+        }
+        setTotalMembers(memberCount)
       } catch (err) {
         setError('Failed to fetch your gyms')
       } finally {
@@ -70,6 +77,33 @@ const OwnerDashboard = () => {
         </div>
       </div>
 
+      {/* Stats Bar */}
+      <div className="max-w-6xl mx-auto px-8 pt-6 grid grid-cols-3 gap-4">
+        <div
+          className="p-4 rounded-xl text-center"
+          style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+        >
+          <p className="text-sm mb-1" style={{ color: textSecondary }}>Total Gyms</p>
+          <p className="text-3xl font-bold" style={{ color: '#D4AF37' }}>{gyms.length}</p>
+        </div>
+        <div
+          className="p-4 rounded-xl text-center"
+          style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+        >
+          <p className="text-sm mb-1" style={{ color: textSecondary }}>Total Members</p>
+          <p className="text-3xl font-bold" style={{ color: '#22c55e' }}>{totalMembers}</p>
+        </div>
+        <div
+          className="p-4 rounded-xl text-center"
+          style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
+        >
+          <p className="text-sm mb-1" style={{ color: textSecondary }}>Avg Members/Gym</p>
+          <p className="text-3xl font-bold" style={{ color: '#60a5fa' }}>
+            {gyms.length > 0 ? (totalMembers / gyms.length).toFixed(1) : 0}
+          </p>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-8 py-10">
 
         {error && (
@@ -101,7 +135,7 @@ const OwnerDashboard = () => {
               >
                 {/* Image */}
                 <NavLink to={`/gym/${gym._id}`}>
-                  <div className="h-48 overflow-hidden" style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#e5e5e5' }}>
+                  <div className="h-48 overflow-hidden" style={{ backgroundColor: theme === 'dark' ? '#003333' : '#e0f5f5' }}>
                     {gym.images?.length > 0 ? (
                       <img
                         src={gym.images[0]}
@@ -138,7 +172,7 @@ const OwnerDashboard = () => {
                         <span
                           key={i}
                           className="px-2 py-1 rounded-full text-xs"
-                          style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0', color: '#D4AF37' }}
+                          style={{ backgroundColor: theme === 'dark' ? '#003333' : '#e0f5f5', color: '#D4AF37' }}
                         >
                           {amenity}
                         </span>
@@ -146,7 +180,7 @@ const OwnerDashboard = () => {
                       {gym.amenities.length > 3 && (
                         <span
                           className="px-2 py-1 rounded-full text-xs"
-                          style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0', color: textSecondary }}
+                          style={{ backgroundColor: theme === 'dark' ? '#003333' : '#e0f5f5', color: textSecondary }}
                         >
                           +{gym.amenities.length - 3} more
                         </span>
