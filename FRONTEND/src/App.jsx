@@ -12,6 +12,9 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Profile from './pages/Profile'
 import Members from './pages/Members'
 import Settings from './pages/Settings'
+import GoogleAuthSuccess from './pages/GoogleAuthSuccess'
+
+
 
 
 
@@ -28,6 +31,7 @@ function App() {
             <Settings />
           </ProtectedRoute>
         } />
+        <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
 
         // add this route
         <Route path="/profile" element={

@@ -15,6 +15,7 @@ const gymSchema = z.object({
 })
 
 const DEFAULT_AMENITIES = ['Parking', 'Locker', 'Trainer', 'Sauna', 'Pool', 'Cardio', 'Weights', 'Yoga']
+const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 const CreateGym = () => {
   const [error, setError] = useState(null)
@@ -35,6 +36,15 @@ const CreateGym = () => {
     { type: '6months', price: '' },
     { type: 'yearly', price: '' }
   ])
+  const [timing, setTiming] = useState({
+    monday: { open: '06:00', close: '22:00', isClosed: false },
+    tuesday: { open: '06:00', close: '22:00', isClosed: false },
+    wednesday: { open: '06:00', close: '22:00', isClosed: false },
+    thursday: { open: '06:00', close: '22:00', isClosed: false },
+    friday: { open: '06:00', close: '22:00', isClosed: false },
+    saturday: { open: '06:00', close: '22:00', isClosed: false },
+    sunday: { open: '06:00', close: '22:00', isClosed: true }
+  })
   const navigate = useNavigate()
   const { theme } = useTheme()
 
@@ -43,8 +53,8 @@ const CreateGym = () => {
   const cardBorder = theme === 'dark' ? '#005500' : '#b0e0b0'
   const textPrimary = theme === 'dark' ? '#ffffff' : '#111111'
   const textSecondary = theme === 'dark' ? '#9ca3af' : '#6b7280'
-  const inputBg = theme === 'dark' ? '#00000f' : '#f0f0ff'
-  const inputBorder = theme === 'dark' ? '#1a1a5a' : '#c0c0ff'
+  const inputBg = theme === 'dark' ? '#001500' : '#f9fff9'
+  const inputBorder = theme === 'dark' ? '#005500' : '#b0e0b0'
   const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
 
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -100,6 +110,11 @@ const CreateGym = () => {
     setSelectedAmenities(prev => prev.filter(a => a !== amenity))
   }
 
+  const getPlanLabel = (type) => ({
+    monthly: '1 Month', '3months': '3 Months',
+    '6months': '6 Months', yearly: '1 Year'
+  }[type])
+
   const onSubmit = async (data) => {
     try {
       if (!location) { setError("Please set your gym location first"); return }
@@ -111,19 +126,14 @@ const CreateGym = () => {
         lat: location.lat,
         lng: location.lng,
         socialLinks,
-        subscriptionPlans: subscriptionPlans.filter(p => p.price)
+        subscriptionPlans: subscriptionPlans.filter(p => p.price),
+        timing
       })
       navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data || 'Failed to create gym')
     }
   }
-
-
-  const getPlanLabel = (type) => ({
-    monthly: '1 Month', '3months': '3 Months',
-    '6months': '6 Months', yearly: '1 Year'
-  }[type])
 
   return (
     <div style={{ backgroundColor: bg, minHeight: '100vh' }}>
@@ -135,9 +145,7 @@ const CreateGym = () => {
       </div>
 
       <div className="max-w-3xl mx-auto px-8 py-10">
-        {error && (
-          <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>
-        )}
+        {error && <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
@@ -183,33 +191,21 @@ const CreateGym = () => {
 
           {/* Subscription Plans */}
           <div>
-            <label className="block text-sm font-medium mb-3" style={{ color: textSecondary }}>
-              Subscription Plans
-            </label>
+            <label className="block text-sm font-medium mb-3" style={{ color: textSecondary }}>Subscription Plans</label>
             <div className="grid grid-cols-2 gap-4">
               {subscriptionPlans.map((plan, i) => (
-                <div
-                  key={plan.type}
-                  className="p-4 rounded-xl"
-                  style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
-                >
-                  <p className="text-sm font-medium mb-2" style={{ color: '#D4AF37' }}>
-                    {getPlanLabel(plan.type)}
-                  </p>
+                <div key={plan.type} className="p-4 rounded-xl" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+                  <p className="text-sm font-medium mb-2" style={{ color: '#D4AF37' }}>{getPlanLabel(plan.type)}</p>
                   <div className="flex items-center gap-2">
                     <span style={{ color: textSecondary }}>₹</span>
-                    <input
-                      type="number"
-                      placeholder="Enter price"
-                      value={plan.price}
+                    <input type="number" placeholder="Enter price" value={plan.price}
                       onChange={(e) => {
                         const updated = [...subscriptionPlans]
                         updated[i].price = e.target.value
                         setSubscriptionPlans(updated)
                       }}
                       className="flex-1 px-3 py-2 rounded-lg border focus:outline-none text-sm"
-                      style={inputStyle}
-                    />
+                      style={inputStyle} />
                   </div>
                 </div>
               ))}
@@ -221,55 +217,80 @@ const CreateGym = () => {
             <label className="block text-sm font-medium mb-3" style={{ color: textSecondary }}>Amenities</label>
             <div className="flex flex-wrap gap-3 mb-4">
               {DEFAULT_AMENITIES.map((amenity) => (
-                <button
-                  key={amenity}
-                  type="button"
-                  onClick={() => toggleAmenity(amenity)}
+                <button key={amenity} type="button" onClick={() => toggleAmenity(amenity)}
                   className="px-4 py-2 rounded-full text-sm font-medium transition-all"
                   style={{
                     backgroundColor: selectedAmenities.includes(amenity) ? '#D4AF37' : cardBg,
                     color: selectedAmenities.includes(amenity) ? '#000' : '#D4AF37',
                     border: '1px solid #D4AF37'
-                  }}
-                >
+                  }}>
                   {amenity}
                 </button>
               ))}
             </div>
-
             {customAmenities.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-4">
                 {customAmenities.map((amenity) => (
-                  <div
-                    key={amenity}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-                    style={{ backgroundColor: '#D4AF37', color: '#000' }}
-                  >
+                  <div key={amenity} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+                    style={{ backgroundColor: '#D4AF37', color: '#000' }}>
                     <span>{amenity}</span>
                     <button type="button" onClick={() => removeCustomAmenity(amenity)} className="hover:opacity-70 font-bold">×</button>
                   </div>
                 ))}
               </div>
             )}
-
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Add custom amenity..."
+              <input type="text" placeholder="Add custom amenity..."
                 value={customAmenity}
                 onChange={(e) => setCustomAmenity(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomAmenity())}
                 className="flex-1 px-4 py-2 rounded-lg border focus:outline-none text-sm"
-                style={inputStyle}
-              />
-              <button
-                type="button"
-                onClick={addCustomAmenity}
+                style={inputStyle} />
+              <button type="button" onClick={addCustomAmenity}
                 className="px-4 py-2 rounded-lg font-bold text-black transition-all hover:opacity-90"
-                style={{ backgroundColor: '#D4AF37' }}
-              >
+                style={{ backgroundColor: '#D4AF37' }}>
                 + Add
               </button>
+            </div>
+          </div>
+
+          {/* Opening Hours */}
+          <div>
+            <label className="block text-sm font-medium mb-3" style={{ color: textSecondary }}>Opening Hours</label>
+            <div className="flex flex-col gap-2">
+              {DAYS.map((day) => (
+                <div key={day} className="flex items-center gap-4 p-3 rounded-lg flex-wrap"
+                  style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+                  <div className="w-24 capitalize font-medium text-sm" style={{ color: textPrimary }}>{day}</div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={timing[day].isClosed}
+                      onChange={(e) => setTiming(prev => ({
+                        ...prev, [day]: { ...prev[day], isClosed: e.target.checked }
+                      }))}
+                      className="accent-yellow-500" />
+                    <span className="text-sm" style={{ color: '#ef4444' }}>Closed</span>
+                  </label>
+                  {!timing[day].isClosed ? (
+                    <>
+                      <input type="time" value={timing[day].open}
+                        onChange={(e) => setTiming(prev => ({
+                          ...prev, [day]: { ...prev[day], open: e.target.value }
+                        }))}
+                        className="px-3 py-1.5 rounded-lg border text-sm focus:outline-none"
+                        style={inputStyle} />
+                      <span style={{ color: textSecondary }}>to</span>
+                      <input type="time" value={timing[day].close}
+                        onChange={(e) => setTiming(prev => ({
+                          ...prev, [day]: { ...prev[day], close: e.target.value }
+                        }))}
+                        className="px-3 py-1.5 rounded-lg border text-sm focus:outline-none"
+                        style={inputStyle} />
+                    </>
+                  ) : (
+                    <span className="text-sm" style={{ color: '#ef4444' }}>Closed all day</span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -285,14 +306,11 @@ const CreateGym = () => {
               ].map((social) => (
                 <div key={social.key} className="flex items-center gap-3">
                   <span className="text-xl w-8">{social.emoji}</span>
-                  <input
-                    type="url"
-                    placeholder={social.placeholder}
+                  <input type="url" placeholder={social.placeholder}
                     value={socialLinks[social.key]}
                     onChange={(e) => setSocialLinks(prev => ({ ...prev, [social.key]: e.target.value }))}
                     className="flex-1 px-4 py-3 rounded-lg border focus:outline-none text-sm"
-                    style={inputStyle}
-                  />
+                    style={inputStyle} />
                 </div>
               ))}
             </div>
@@ -301,10 +319,8 @@ const CreateGym = () => {
           {/* Images */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Gym Images</label>
-            <label
-              className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed cursor-pointer transition-all hover:border-yellow-500"
-              style={{ borderColor: inputBorder, backgroundColor: cardBg }}
-            >
+            <label className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed cursor-pointer transition-all hover:border-yellow-500"
+              style={{ borderColor: inputBorder, backgroundColor: cardBg }}>
               <span className="text-3xl mb-2">📸</span>
               <p className="text-sm" style={{ color: textSecondary }}>Click to upload gym photos</p>
               <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
@@ -327,16 +343,13 @@ const CreateGym = () => {
           {/* Location */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Gym Location</label>
-            <button
-              type="button"
-              onClick={handleGetLocation}
+            <button type="button" onClick={handleGetLocation}
               className="w-full py-3 rounded-lg font-medium transition-all hover:opacity-80"
               style={{
                 backgroundColor: location ? '#1a2a1a' : cardBg,
                 border: `1px solid ${location ? '#22c55e' : inputBorder}`,
                 color: location ? '#22c55e' : '#D4AF37'
-              }}
-            >
+              }}>
               {locationLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
@@ -346,11 +359,9 @@ const CreateGym = () => {
             </button>
           </div>
 
-          <button
-            type="submit"
+          <button type="submit"
             className="w-full py-4 rounded-lg font-bold text-black text-lg transition-all hover:opacity-90 hover:scale-105 mt-4"
-            style={{ backgroundColor: '#D4AF37' }}
-          >
+            style={{ backgroundColor: '#D4AF37' }}>
             List My Gym
           </button>
 

@@ -25,6 +25,8 @@ const favouriteRouter = require('./routes/favourites');
 const userRouter = require('./routes/users');
 const memberRouter = require('./routes/members');
 const settingsRouter = require('./routes/settings')
+const passport = require('./config/passport')
+app.use(passport.initialize())
 app.use('/api/settings', settingsRouter)
 
 app.use('/api/auth', authRouter);

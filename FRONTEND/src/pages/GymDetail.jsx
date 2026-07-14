@@ -311,6 +311,56 @@ const GymDetail = () => {
             Send Email
           </a>
         </div>
+        {/* Opening Hours */}
+        {gym.timing && (
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: textPrimary }}>Opening Hours</h2>
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day, i) => {
+                const dayTiming = gym.timing[day]
+                const now = new Date()
+                const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
+                const isToday = currentDay === day
+                let isOpenNow = false
+                if (dayTiming && !dayTiming.isClosed && dayTiming.open && dayTiming.close) {
+                  const [openH, openM] = dayTiming.open.split(':').map(Number)
+                  const [closeH, closeM] = dayTiming.close.split(':').map(Number)
+                  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+                  const openMinutes = openH * 60 + openM
+                  const closeMinutes = closeH * 60 + closeM
+                  isOpenNow = currentMinutes >= openMinutes && currentMinutes <= closeMinutes
+                }
+                return (
+                  <div key={day}
+                    className="flex justify-between items-center px-5 py-3"
+                    style={{
+                      borderBottom: i < 6 ? `1px solid ${cardBorder}` : 'none',
+                      backgroundColor: isToday ? (theme === 'dark' ? '#1a1500' : '#fffbeb') : 'transparent'
+                    }}>
+                    <div className="flex items-center gap-3">
+                      <span className="capitalize font-medium" style={{ color: isToday ? '#D4AF37' : textPrimary }}>
+                        {day}
+                      </span>
+                      {isToday && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            backgroundColor: isOpenNow ? '#22c55e22' : '#ef444422',
+                            color: isOpenNow ? '#22c55e' : '#ef4444',
+                            border: `1px solid ${isOpenNow ? '#22c55e' : '#ef4444'}`
+                          }}>
+                          {isOpenNow ? '● Open Now' : '● Closed Now'}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm" style={{ color: dayTiming?.isClosed ? '#ef4444' : textSecondary }}>
+                      {dayTiming?.isClosed ? 'Closed' : `${dayTiming?.open} – ${dayTiming?.close}`}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Amenities */}
         {gym.amenities && gym.amenities.length > 0 && (

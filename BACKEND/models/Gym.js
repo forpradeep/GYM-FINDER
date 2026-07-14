@@ -6,7 +6,7 @@ const GymSchema = new Schema({
     address: { type: String, minLength: 3, maxLength: 200 },
     emailId: { type: String, required: true, unique: true, trim: true, lowercase: true },
     contact: { type: Number },
-    membershipPrice: { type: Number }, // kept for backwards compatibility
+    membershipPrice: { type: Number },
     subscriptionPlans: [
         {
             type: { type: String, enum: ['monthly', '3months', '6months', 'yearly'] },
@@ -15,6 +15,15 @@ const GymSchema = new Schema({
     ],
     images: [String],
     amenities: [String],
+    timing: {
+        monday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        tuesday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        wednesday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        thursday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        friday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        saturday: { open: String, close: String, isClosed: { type: Boolean, default: false } },
+        sunday: { open: String, close: String, isClosed: { type: Boolean, default: true } }
+    },
     location: {
         type: { type: String, default: 'Point' },
         coordinates: [Number]
@@ -29,6 +38,5 @@ const GymSchema = new Schema({
 }, { timestamps: true });
 
 GymSchema.index({ location: '2dsphere' });
-
 const Gym = mongoose.model("Gym", GymSchema);
 module.exports = Gym;
