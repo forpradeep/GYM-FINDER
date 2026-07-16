@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const { createGym, getAllGyms, getOneGym, updateGym, deleteGym, getOwnerGyms } = require('../controllers/gymController');
 const { upload } = require('../config/cloudinary');
 
-gymRouter.post('/upload', authMiddleware, roleMiddleware, upload.array('images', 5), async (req, res) => {
+gymRouter.post('/upload', authMiddleware,  upload.array('images', 5), async (req, res) => {
     try {
         const urls = req.files.map(file => file.path);
         res.status(200).json({ urls });

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance'
 import axios from 'axios'
@@ -17,8 +17,11 @@ const gymSchema = z.object({
 const DEFAULT_AMENITIES = ['Parking', 'Locker', 'Trainer', 'Sauna', 'Pool', 'Cardio', 'Weights', 'Yoga']
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
-const CreateGym = () => {
+const EditGym = () => {
+  const { theme } = useTheme()
+  const { id } = useParams()
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [location, setLocation] = useState(null)
   const [selectedAmenities, setSelectedAmenities] = useState([])
   const [customAmenity, setCustomAmenity] = useState('')
@@ -45,12 +48,7 @@ const CreateGym = () => {
     saturday: { open: '06:00', close: '22:00', isClosed: false },
     sunday: { open: '06:00', close: '22:00', isClosed: true }
   })
-  if (gym.timing) {
-  setTiming(gym.timing)
-}
   const navigate = useNavigate()
-  const { id } = useParams()
-  const { theme } = useTheme()
 
   const bg = theme === 'dark' ? '#000f00' : '#f0fff0'
   const cardBg = theme === 'dark' ? '#002500' : '#ffffff'
@@ -61,9 +59,56 @@ const CreateGym = () => {
   const inputBorder = theme === 'dark' ? '#005500' : '#b0e0b0'
   const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(gymSchema)
   })
+
+  useEffect(() => {
+    const fetchGym = async () => {
+      try {
+        const response = await axiosInstance.get(`/gyms/${id}`)
+        const gym = response.data.gym
+        reset({
+          title: gym.title,
+          address: gym.address,
+          emailId: gym.emailId,
+          contact: String(gym.contact),
+        })
+        const customs = gym.amenities?.filter(a => !DEFAULT_AMENITIES.includes(a)) || []
+        setSelectedAmenities(gym.amenities || [])
+        setCustomAmenities(customs)
+        setImages(gym.images || [])
+        setImagePreview(gym.images || [])
+        if (gym.socialLinks) {
+          setSocialLinks({
+            instagram: gym.socialLinks.instagram || '',
+            facebook: gym.socialLinks.facebook || '',
+            twitter: gym.socialLinks.twitter || '',
+            youtube: gym.socialLinks.youtube || ''
+          })
+        }
+        if (gym.subscriptionPlans && gym.subscriptionPlans.length > 0) {
+          const planMap = {}
+          gym.subscriptionPlans.forEach(p => planMap[p.type] = p.price)
+          setSubscriptionPlans([
+            { type: 'monthly', price: planMap['monthly'] || '' },
+            { type: '3months', price: planMap['3months'] || '' },
+            { type: '6months', price: planMap['6months'] || '' },
+            { type: 'yearly', price: planMap['yearly'] || '' }
+          ])
+        }
+        if (gym.timing) setTiming(gym.timing)
+        if (gym.location?.coordinates) {
+          setLocation({ lat: gym.location.coordinates[1], lng: gym.location.coordinates[0] })
+        }
+      } catch (err) {
+        setError('Failed to fetch gym details')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchGym()
+  }, [id])
 
   const handleGetLocation = () => {
     setLocationLoading(true)
@@ -121,7 +166,6 @@ const CreateGym = () => {
 
   const onSubmit = async (data) => {
     try {
-      if (!location) { setError("Please set your gym location first"); return }
       setError(null)
       await axiosInstance.put(`/gyms/${id}`, {
         ...data,
@@ -134,16 +178,22 @@ const CreateGym = () => {
       })
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data || 'Failed to create gym')
+      setError(err.response?.data || 'Failed to update gym')
     }
   }
+
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-screen" style={{ backgroundColor: bg }}>
+      <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
 
   return (
     <div style={{ backgroundColor: bg, minHeight: '100vh' }}>
       <div className="px-8 py-8" style={{ borderBottom: `1px solid ${cardBorder}` }}>
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold" style={{ color: textPrimary }}>List Your Gym</h1>
-          <p className="mt-1" style={{ color: textSecondary }}>Fill in your gym details to get listed</p>
+          <h1 className="text-4xl font-bold" style={{ color: textPrimary }}>Edit Gym</h1>
+          <p className="mt-1" style={{ color: textSecondary }}>Update your gym details</p>
         </div>
       </div>
 
@@ -155,7 +205,7 @@ const CreateGym = () => {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Gym Name</label>
-            <input type="text" placeholder="Fitness Hub"
+            <input type="text"
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
               style={{ ...inputStyle, borderColor: errors.title ? '#ef4444' : inputBorder }}
               {...register('title')} />
@@ -165,7 +215,7 @@ const CreateGym = () => {
           {/* Address */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Address</label>
-            <input type="text" placeholder="123 MG Road, Delhi"
+            <input type="text"
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
               style={{ ...inputStyle, borderColor: errors.address ? '#ef4444' : inputBorder }}
               {...register('address')} />
@@ -176,7 +226,7 @@ const CreateGym = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Gym Email</label>
-              <input type="email" placeholder="gym@example.com"
+              <input type="email"
                 className="w-full px-4 py-3 rounded-lg border focus:outline-none"
                 style={{ ...inputStyle, borderColor: errors.emailId ? '#ef4444' : inputBorder }}
                 {...register('emailId')} />
@@ -184,7 +234,7 @@ const CreateGym = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Contact Number</label>
-              <input type="text" placeholder="9876543210"
+              <input type="text"
                 className="w-full px-4 py-3 rounded-lg border focus:outline-none"
                 style={{ ...inputStyle, borderColor: errors.contact ? '#ef4444' : inputBorder }}
                 {...register('contact')} />
@@ -322,23 +372,24 @@ const CreateGym = () => {
           {/* Images */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Gym Images</label>
-            <label className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed cursor-pointer transition-all hover:border-yellow-500"
+            {imagePreview.length > 0 && (
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {imagePreview.map((url, i) => (
+                  <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg"
+                    style={{ border: '1px solid #D4AF37' }} />
+                ))}
+              </div>
+            )}
+            <label className="flex flex-col items-center justify-center w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-all hover:border-yellow-500"
               style={{ borderColor: inputBorder, backgroundColor: cardBg }}>
-              <span className="text-3xl mb-2">📸</span>
-              <p className="text-sm" style={{ color: textSecondary }}>Click to upload gym photos</p>
+              <span className="text-2xl mb-1">📸</span>
+              <p className="text-sm" style={{ color: textSecondary }}>Click to update gym photos</p>
               <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
             </label>
             {imageLoading && (
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-sm" style={{ color: textSecondary }}>Uploading images...</p>
-              </div>
-            )}
-            {imagePreview.length > 0 && (
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {imagePreview.map((url, i) => (
-                  <img key={i} src={url} className="h-20 w-20 object-cover rounded-lg" style={{ border: '1px solid #D4AF37' }} />
-                ))}
               </div>
             )}
           </div>
@@ -358,15 +409,22 @@ const CreateGym = () => {
                   <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                   Getting location...
                 </span>
-              ) : location ? '📍 Location Set ✅' : '📍 Use My Current Location'}
+              ) : location ? '📍 Location Set ✅' : '📍 Update Location'}
             </button>
           </div>
 
-          <button type="submit"
-            className="w-full py-4 rounded-lg font-bold text-black text-lg transition-all hover:opacity-90 hover:scale-105 mt-4"
-            style={{ backgroundColor: '#D4AF37' }}>
-            List My Gym
-          </button>
+          <div className="flex gap-4 mt-4">
+            <button type="submit"
+              className="flex-1 py-4 rounded-lg font-bold text-black text-lg transition-all hover:opacity-90"
+              style={{ backgroundColor: '#D4AF37' }}>
+              Save Changes
+            </button>
+            <button type="button" onClick={() => navigate('/dashboard')}
+              className="flex-1 py-4 rounded-lg font-bold transition-all hover:opacity-80"
+              style={{ border: `1px solid ${cardBorder}`, color: textSecondary }}>
+              Cancel
+            </button>
+          </div>
 
         </form>
       </div>
@@ -374,4 +432,4 @@ const CreateGym = () => {
   )
 }
 
-export default CreateGym
+export default EditGym

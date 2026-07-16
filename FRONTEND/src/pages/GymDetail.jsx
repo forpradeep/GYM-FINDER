@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import axiosInstance from '../utils/axiosInstance'
+import axios from 'axios'
 import { useTheme } from '../context/ThemeContext'
 
 const getPlanLabel = (type) => ({
@@ -9,15 +10,14 @@ const getPlanLabel = (type) => ({
   '6months': '6 Months', yearly: '1 Year'
 }[type])
 
-// ✅ EnrolSection defined OUTSIDE GymDetail
 const EnrolSection = ({ gymId, ownerId, subscriptionPlans, membershipPrice, theme }) => {
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [enrolling, setEnrolling] = useState(false)
   const [enrolled, setEnrolled] = useState(false)
   const [error, setError] = useState(null)
 
-  const cardBg = theme === 'dark' ? '#1a1a1a' : '#ffffff'
-  const cardBorder = theme === 'dark' ? '#2a2a2a' : '#e5e5e5'
+  const cardBg = theme === 'dark' ? '#1a0f00' : '#ffffff'
+  const cardBorder = theme === 'dark' ? '#5a3d00' : '#f0d080'
   const textSecondary = theme === 'dark' ? '#9ca3af' : '#6b7280'
 
   const handleEnrol = async () => {
@@ -25,10 +25,7 @@ const EnrolSection = ({ gymId, ownerId, subscriptionPlans, membershipPrice, them
     setEnrolling(true)
     setError(null)
     try {
-      await axiosInstance.post(`/members/enrol/${gymId}`, {
-        subscriptionType: selectedPlan,
-        ownerId
-      })
+      await axiosInstance.post(`/members/enrol/${gymId}`, { subscriptionType: selectedPlan, ownerId })
       setEnrolled(true)
     } catch (err) {
       setError(err.response?.data || 'Enrollment failed')
@@ -38,40 +35,28 @@ const EnrolSection = ({ gymId, ownerId, subscriptionPlans, membershipPrice, them
   }
 
   if (enrolled) return (
-    <div
-      className="p-6 rounded-xl text-center"
-      style={{ backgroundColor: cardBg, border: '1px solid #22c55e' }}
-    >
+    <div className="p-6 rounded-xl text-center" style={{ backgroundColor: cardBg, border: '1px solid #22c55e' }}>
       <p className="text-4xl mb-3">🎉</p>
       <p className="text-xl font-bold text-green-400">Successfully Enrolled!</p>
-      <p className="mt-2" style={{ color: textSecondary }}>
-        Your {getPlanLabel(selectedPlan)} membership is now active.
-      </p>
+      <p className="mt-2" style={{ color: textSecondary }}>Your {getPlanLabel(selectedPlan)} membership is now active.</p>
     </div>
   )
 
   const plans = subscriptionPlans && subscriptionPlans.length > 0
-    ? subscriptionPlans
-    : [{ type: 'monthly', price: membershipPrice }]
+    ? subscriptionPlans : [{ type: 'monthly', price: membershipPrice }]
 
   return (
     <div>
-      {error && (
-        <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>
-      )}
+      {error && <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {plans.map((plan, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setSelectedPlan(plan.type)}
+          <button key={i} type="button" onClick={() => setSelectedPlan(plan.type)}
             className="p-4 rounded-xl text-center transition-all hover:scale-105"
             style={{
               backgroundColor: selectedPlan === plan.type ? '#D4AF37' : cardBg,
               border: `1px solid ${selectedPlan === plan.type ? '#D4AF37' : cardBorder}`,
               color: selectedPlan === plan.type ? '#000' : '#D4AF37'
-            }}
-          >
+            }}>
             <p className="text-sm mb-1" style={{ color: selectedPlan === plan.type ? '#000' : textSecondary }}>
               {getPlanLabel(plan.type)}
             </p>
@@ -79,16 +64,13 @@ const EnrolSection = ({ gymId, ownerId, subscriptionPlans, membershipPrice, them
           </button>
         ))}
       </div>
-      <button
-        onClick={handleEnrol}
-        disabled={!selectedPlan || enrolling}
+      <button onClick={handleEnrol} disabled={!selectedPlan || enrolling}
         className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90"
         style={{
           backgroundColor: selectedPlan ? '#D4AF37' : cardBg,
           color: selectedPlan ? '#000' : textSecondary,
           border: selectedPlan ? 'none' : `1px solid ${cardBorder}`
-        }}
-      >
+        }}>
         {enrolling ? 'Enrolling...' : selectedPlan ? `Enrol for ${getPlanLabel(selectedPlan)}` : 'Select a Plan to Enrol'}
       </button>
     </div>
@@ -104,20 +86,22 @@ const GymDetail = () => {
   const [reviews, setReviews] = useState([])
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [reviewImages, setReviewImages] = useState([])
+  const [reviewImagePreview, setReviewImagePreview] = useState([])
   const [reviewError, setReviewError] = useState(null)
   const [reviewLoading, setReviewLoading] = useState(false)
   const [activeImage, setActiveImage] = useState(0)
+  const [lightboxImage, setLightboxImage] = useState(null)
   const { isLoggedIn, user } = useSelector((state) => state.auth)
   const navigate = useNavigate()
 
   const bg = theme === 'dark' ? '#0f0800' : '#fffaf0'
-  const cardBg = theme === 'dark' ? '#251a00' : '#ffffff'
+  const cardBg = theme === 'dark' ? '#1a0f00' : '#ffffff'
   const cardBorder = theme === 'dark' ? '#5a3d00' : '#f0d080'
   const textPrimary = theme === 'dark' ? '#ffffff' : '#111111'
   const textSecondary = theme === 'dark' ? '#9ca3af' : '#6b7280'
-  const inputBg = theme === 'dark' ? '#00000f' : '#f0f0ff'
-  const inputBorder = theme === 'dark' ? '#1a1a5a' : '#c0c0ff'
-  const inputStyle = { backgroundColor: inputBg, borderColor: inputBorder, color: textPrimary }
+  const inputBg = theme === 'dark' ? '#0f0800' : '#fffaf0'
+  const inputBorder = theme === 'dark' ? '#5a3d00' : '#f0d080'
 
   useEffect(() => {
     const fetchGym = async () => {
@@ -152,15 +136,35 @@ const GymDetail = () => {
     }
   }
 
+  const handleReviewImageUpload = async (e) => {
+    const files = Array.from(e.target.files)
+    try {
+      const formData = new FormData()
+      files.forEach(file => formData.append('images', file))
+      const response = await axios.post('http://localhost:3000/api/gyms/upload', formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setReviewImages(response.data.urls)
+      setReviewImagePreview(files.map(file => URL.createObjectURL(file)))
+    } catch (err) {
+      console.log('Image upload failed', err)
+    }
+  }
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault()
     try {
       setReviewLoading(true)
       setReviewError(null)
-      const response = await axiosInstance.post(`/reviews/${id}`, { rating, comment })
+      const response = await axiosInstance.post(`/reviews/${id}`, {
+        rating, comment, images: reviewImages
+      })
       setReviews([response.data.review, ...reviews])
       setComment('')
       setRating(5)
+      setReviewImages([])
+      setReviewImagePreview([])
     } catch (err) {
       setReviewError(err.response?.data || 'Failed to submit review')
     } finally {
@@ -191,21 +195,15 @@ const GymDetail = () => {
       <div className="relative h-96 overflow-hidden">
         {gym.images && gym.images.length > 0 ? (
           <div className="w-full h-full">
-            <img
-              src={gym.images[activeImage]}
-              alt={gym.title}
-              className="w-full h-full object-cover transition-all duration-500"
-            />
+            <img src={gym.images[activeImage]} alt={gym.title}
+              className="w-full h-full object-cover transition-all duration-500" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             {gym.images.length > 1 && (
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
                 {gym.images.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
+                  <button key={i} onClick={() => setActiveImage(i)}
                     className="w-2 h-2 rounded-full transition-all"
-                    style={{ backgroundColor: i === activeImage ? '#D4AF37' : '#666' }}
-                  />
+                    style={{ backgroundColor: i === activeImage ? '#D4AF37' : '#666' }} />
                 ))}
               </div>
             )}
@@ -216,11 +214,9 @@ const GymDetail = () => {
           </div>
         )}
 
-        <button
-          onClick={() => navigate(-1)}
+        <button onClick={() => navigate(-1)}
           className="absolute top-4 left-4 px-4 py-2 rounded-lg text-white text-sm font-medium transition-all hover:opacity-80"
-          style={{ backgroundColor: 'rgba(0,0,0,0.5)', border: '1px solid #333' }}
-        >
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)', border: '1px solid #333' }}>
           ← Back
         </button>
 
@@ -231,10 +227,8 @@ const GymDetail = () => {
               <p className="text-gray-300 mt-1">📍 {gym.address}</p>
             </div>
             {averageRating && (
-              <div
-                className="px-4 py-2 rounded-xl text-center"
-                style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid #D4AF37' }}
-              >
+              <div className="px-4 py-2 rounded-xl text-center"
+                style={{ backgroundColor: 'rgba(0,0,0,0.7)', border: '1px solid #D4AF37' }}>
                 <p className="text-2xl font-bold" style={{ color: '#D4AF37' }}>{averageRating}</p>
                 <p className="text-gray-400 text-xs">⭐ rating</p>
               </div>
@@ -251,11 +245,8 @@ const GymDetail = () => {
             <h2 className="text-2xl font-bold mb-4" style={{ color: textPrimary }}>Membership Plans</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {gym.subscriptionPlans.map((plan, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-xl text-center transition-all hover:scale-105"
-                  style={{ backgroundColor: cardBg, border: '1px solid #D4AF37' }}
-                >
+                <div key={i} className="p-5 rounded-xl text-center transition-all hover:scale-105"
+                  style={{ backgroundColor: cardBg, border: '1px solid #D4AF37' }}>
                   <p className="text-sm mb-2" style={{ color: textSecondary }}>{getPlanLabel(plan.type)}</p>
                   <p className="text-3xl font-bold" style={{ color: '#D4AF37' }}>₹{plan.price}</p>
                   <p className="text-xs mt-1" style={{ color: textSecondary }}>per plan</p>
@@ -266,7 +257,8 @@ const GymDetail = () => {
         ) : (
           <div className="mb-10">
             <h2 className="text-2xl font-bold mb-4" style={{ color: textPrimary }}>Membership</h2>
-            <div className="p-5 rounded-xl text-center w-48" style={{ backgroundColor: cardBg, border: '1px solid #D4AF37' }}>
+            <div className="p-5 rounded-xl text-center w-48"
+              style={{ backgroundColor: cardBg, border: '1px solid #D4AF37' }}>
               <p className="text-sm mb-2" style={{ color: textSecondary }}>Monthly</p>
               <p className="text-3xl font-bold" style={{ color: '#D4AF37' }}>₹{gym.membershipPrice}</p>
               <p className="text-xs mt-1" style={{ color: textSecondary }}>/month</p>
@@ -283,9 +275,8 @@ const GymDetail = () => {
           </div>
           <div className="p-4 rounded-xl text-center" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
             <p className="text-sm mb-1" style={{ color: textSecondary }}>Contact</p>
-            <a href={`tel:${gym.contact}`} className="text-lg font-bold hover:text-yellow-400 transition-colors" style={{ color: textPrimary }}>
-              {gym.contact}
-            </a>
+            <a href={`tel:${gym.contact}`} className="text-lg font-bold hover:text-yellow-400 transition-colors"
+              style={{ color: textPrimary }}>{gym.contact}</a>
           </div>
           <div className="p-4 rounded-xl text-center" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
             <p className="text-sm mb-1" style={{ color: textSecondary }}>WhatsApp</p>
@@ -297,7 +288,8 @@ const GymDetail = () => {
         </div>
 
         {/* Email */}
-        <div className="flex items-center justify-between p-4 rounded-xl mb-10" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+        <div className="flex items-center justify-between p-4 rounded-xl mb-10"
+          style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
           <div>
             <p className="text-sm" style={{ color: textSecondary }}>Email</p>
             <a href={`https://mail.google.com/mail/?view=cm&to=${gym.emailId}`} target="_blank" rel="noreferrer"
@@ -311,12 +303,13 @@ const GymDetail = () => {
             Send Email
           </a>
         </div>
+
         {/* Opening Hours */}
         {gym.timing && (
           <div className="mb-10">
             <h2 className="text-2xl font-bold mb-4" style={{ color: textPrimary }}>Opening Hours</h2>
             <div className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
-              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day, i) => {
+              {['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].map((day, i) => {
                 const dayTiming = gym.timing[day]
                 const now = new Date()
                 const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
@@ -331,16 +324,14 @@ const GymDetail = () => {
                   isOpenNow = currentMinutes >= openMinutes && currentMinutes <= closeMinutes
                 }
                 return (
-                  <div key={day}
-                    className="flex justify-between items-center px-5 py-3"
+                  <div key={day} className="flex justify-between items-center px-5 py-3"
                     style={{
                       borderBottom: i < 6 ? `1px solid ${cardBorder}` : 'none',
                       backgroundColor: isToday ? (theme === 'dark' ? '#1a1500' : '#fffbeb') : 'transparent'
                     }}>
                     <div className="flex items-center gap-3">
-                      <span className="capitalize font-medium" style={{ color: isToday ? '#D4AF37' : textPrimary }}>
-                        {day}
-                      </span>
+                      <span className="capitalize font-medium"
+                        style={{ color: isToday ? '#D4AF37' : textPrimary }}>{day}</span>
                       {isToday && (
                         <span className="text-xs px-2 py-0.5 rounded-full font-medium"
                           style={{
@@ -416,16 +407,13 @@ const GymDetail = () => {
 
         {/* Add to Favourites */}
         {isLoggedIn && user && user.role === 'seeker' && (
-          <button
-            onClick={handleFavourite}
-            disabled={isFavourited}
+          <button onClick={handleFavourite} disabled={isFavourited}
             className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 mb-6"
             style={{
               backgroundColor: isFavourited ? cardBg : '#D4AF37',
               color: isFavourited ? textSecondary : '#000',
               border: isFavourited ? `1px solid ${cardBorder}` : 'none'
-            }}
-          >
+            }}>
             {isFavourited ? '❤️ Added to Favourites' : '🤍 Add to Favourites'}
           </button>
         )}
@@ -457,13 +445,16 @@ const GymDetail = () => {
             )}
           </div>
 
+          {/* Add Review Form */}
           {isLoggedIn && user && user.role === 'seeker' && (
             <form onSubmit={handleReviewSubmit} className="p-6 rounded-xl mb-8"
               style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
               <h3 className="font-bold mb-4" style={{ color: textPrimary }}>Write a Review</h3>
+
               {reviewError && (
                 <div className="border border-red-500 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">{reviewError}</div>
               )}
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Rating</label>
                 <div className="flex gap-2">
@@ -474,6 +465,7 @@ const GymDetail = () => {
                   ))}
                 </div>
               </div>
+
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>Comment</label>
                 <textarea
@@ -482,9 +474,30 @@ const GymDetail = () => {
                   placeholder="Share your experience..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  rows={3}
-                />
+                  rows={3} />
               </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2" style={{ color: textSecondary }}>
+                  Add Photos <span className="font-normal" style={{ color: textSecondary }}>(optional)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border w-fit transition-all hover:border-yellow-500"
+                  style={{ borderColor: inputBorder, backgroundColor: inputBg }}>
+                  <span>📸</span>
+                  <span className="text-sm" style={{ color: textSecondary }}>Upload photos</span>
+                  <input type="file" multiple accept="image/*" className="hidden"
+                    onChange={handleReviewImageUpload} />
+                </label>
+                {reviewImagePreview.length > 0 && (
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {reviewImagePreview.map((url, i) => (
+                      <img key={i} src={url} className="h-16 w-16 object-cover rounded-lg"
+                        style={{ border: '1px solid #D4AF37' }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button type="submit" disabled={reviewLoading}
                 className="px-6 py-3 rounded-lg font-bold text-black transition-all hover:opacity-90"
                 style={{ backgroundColor: '#D4AF37' }}>
@@ -493,8 +506,10 @@ const GymDetail = () => {
             </form>
           )}
 
+          {/* Display Reviews */}
           {reviews.length === 0 ? (
-            <div className="text-center py-12 rounded-xl" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
+            <div className="text-center py-12 rounded-xl"
+              style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
               <p className="text-4xl mb-3">💬</p>
               <p style={{ color: textSecondary }}>No reviews yet. Be the first to review!</p>
             </div>
@@ -509,7 +524,9 @@ const GymDetail = () => {
                         style={{ backgroundColor: '#D4AF37' }}>
                         {review.userId?.firstName?.[0] || 'A'}
                       </div>
-                      <p className="font-bold" style={{ color: textPrimary }}>{review.userId?.firstName || 'Anonymous'}</p>
+                      <p className="font-bold" style={{ color: textPrimary }}>
+                        {review.userId?.firstName || 'Anonymous'}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map(star => (
@@ -518,8 +535,24 @@ const GymDetail = () => {
                     </div>
                   </div>
                   <p className="ml-12" style={{ color: textSecondary }}>{review.comment}</p>
+
+                  {/* Review Photos */}
+                  {review.images && review.images.length > 0 && (
+                    <div className="flex gap-2 mt-3 ml-12 flex-wrap">
+                      {review.images.map((img, i) => (
+                        <img key={i} src={img}
+                          className="h-20 w-20 object-cover rounded-lg cursor-pointer hover:opacity-80 hover:scale-105 transition-all"
+                          style={{ border: `1px solid ${cardBorder}` }}
+                          onClick={() => setLightboxImage(img)}
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   <p className="text-xs mt-2 ml-12" style={{ color: textSecondary }}>
-                    {new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(review.createdAt).toLocaleDateString('en-IN', {
+                      day: 'numeric', month: 'long', year: 'numeric'
+                    })}
                   </p>
                 </div>
               ))}
@@ -527,6 +560,31 @@ const GymDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.95)' }}
+          onClick={() => setLightboxImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-screen" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={lightboxImage}
+              alt="Review"
+              className="max-w-full max-h-screen object-contain rounded-xl"
+            />
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center font-bold text-black transition-all hover:opacity-80"
+              style={{ backgroundColor: '#D4AF37' }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

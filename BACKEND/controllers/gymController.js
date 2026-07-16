@@ -1,8 +1,9 @@
 const Gym = require('../models/Gym');
+const Review = require('../models/Review');
 
 const createGym = async (req, res) => {
     try {
-        const { title, address, emailId, contact, membershipPrice, images, amenities, lat, lng } = req.body;
+        const { title, address, emailId, contact, membershipPrice, images, amenities, lat, lng, socialLinks, subscriptionPlans, timing } = req.body;
 
         const gym = await Gym.create({
             title,
@@ -12,6 +13,9 @@ const createGym = async (req, res) => {
             membershipPrice,
             images,
             amenities,
+            socialLinks,
+            subscriptionPlans,
+            timing,
             ownerId: req.result._id,
             location: {
                 type: 'Point',
@@ -29,20 +33,17 @@ const getAllGyms = async (req, res) => {
     try {
         const { lat, lng, radius, search } = req.query;
 
-        // text search
+        let gyms;
+
         if (search) {
-            const gyms = await Gym.find({
+            gyms = await Gym.find({
                 $or: [
                     { title: { $regex: search, $options: 'i' } },
                     { address: { $regex: search, $options: 'i' } }
                 ]
             });
-            return res.status(200).json({ gyms });
-        }
-
-        // geospatial search
-        if (lat && lng) {
-            const gyms = await Gym.find({
+        } else if (lat && lng) {
+            gyms = await Gym.find({
                 location: {
                     $near: {
                         $geometry: {
@@ -53,13 +54,24 @@ const getAllGyms = async (req, res) => {
                     }
                 }
             });
-            return res.status(200).json({ gyms });
+        } else {
+            gyms = await Gym.find({});
         }
 
-        // return all
-        const gyms = await Gym.find({});
-        res.status(200).json({ gyms });
+        // add average rating to each gym
+        const gymsWithRatings = await Promise.all(gyms.map(async (gym) => {
+            const reviews = await Review.find({ gymId: gym._id })
+            const avgRating = reviews.length > 0
+                ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+                : null
+            return {
+                ...gym.toObject(),
+                averageRating: avgRating,
+                reviewCount: reviews.length
+            }
+        }))
 
+        res.status(200).json({ gyms: gymsWithRatings });
     } catch (err) {
         res.status(400).send('Error: ' + err.message);
     }
@@ -75,7 +87,6 @@ const getOneGym = async (req, res) => {
     }
 }
 
-// ✅ new route — get owner's gyms
 const getOwnerGyms = async (req, res) => {
     try {
         const gyms = await Gym.find({ ownerId: req.result._id });

@@ -14,61 +14,54 @@ import Members from './pages/Members'
 import Settings from './pages/Settings'
 import GoogleAuthSuccess from './pages/GoogleAuthSuccess'
 
-
-
-
-
-
-
-
 function App() {
   return (
     <>
       <Navbar />
-      <Routes>
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
-        <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
-
-        // add this route
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
-        <Route path="/gym/:gymId/members" element={
-          <ProtectedRoute allowedRole="owner">
-            <Members />
-          </ProtectedRoute>
-        } />
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/gym/:id" element={<GymDetail />} />
-        <Route path="/favourites" element={
-          <ProtectedRoute allowedRole="seeker">
-            <Favourites />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute allowedRole="owner">
-            <OwnerDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/gym/create" element={
-          <ProtectedRoute allowedRole="owner">
-            <CreateGym />
-          </ProtectedRoute>
-        } />
-        <Route path="/gym/edit/:id" element={
-          <ProtectedRoute allowedRole="owner">
-            <EditGym />
-          </ProtectedRoute>
-        } />
-      </Routes>
+      <div style={{ paddingTop: '64px' }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
+          <Route path="/gym/create" element={
+            <ProtectedRoute allowedRole="owner">
+              <CreateGym />
+            </ProtectedRoute>
+          } />
+          <Route path="/gym/edit/:id" element={
+            <ProtectedRoute allowedRole="owner">
+              <EditGym />
+            </ProtectedRoute>
+          } />
+          <Route path="/gym/:id" element={<GymDetail />} />
+          <Route path="/gym/:gymId/members" element={
+            <ProtectedRoute allowedRole="owner">
+              <Members />
+            </ProtectedRoute>
+          } />
+          <Route path="/favourites" element={
+            <ProtectedRoute allowedRole="seeker">
+              <Favourites />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute allowedRole="owner">
+              <OwnerDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </div>
     </>
   )
 }

@@ -15,11 +15,11 @@ const register = async (req, res) => {
         const token = jwt.sign(
             { _id: user._id, emailId: user.emailId, role: user.role },
             process.env.JWT_KEY,
-            { expiresIn: 7 * 24 * 60 * 60 } // ← 7 days
+            { expiresIn: 30 * 24 * 60 * 60 } // ← 30 days
         );
         // In both login and register, update cookie options:
         res.cookie('token', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days instead of 1 hour
+            maxAge: 30 * 24 * 60 * 60 * 1000, //30 days instead of 1 hour
             httpOnly: true,
             sameSite: 'lax'
         })
@@ -50,10 +50,10 @@ const login = async (req, res) => {
         const token = jwt.sign(
             { _id: user._id, emailId: user.emailId, role: user.role },
             process.env.JWT_KEY,
-            { expiresIn: 7 * 24 * 60 * 60 } // ← 7 days
+            { expiresIn: 30 * 24 * 60 * 60 } // ← 30 days
         );
         res.cookie('token', token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days instead of 1 hour
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days instead of 1 hour
             httpOnly: true,
             sameSite: 'lax'
         });

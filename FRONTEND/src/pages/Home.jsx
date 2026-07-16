@@ -407,38 +407,33 @@ const Home = () => {
                   </div>
 
                   <div className="p-5">
-                    <h2 className="text-xl font-bold mb-1 group-hover:text-yellow-400 transition-colors" style={{ color: textPrimary }}>
+                    <h2 className="text-xl font-bold mb-1 group-hover:text-yellow-400 transition-colors"
+                      style={{ color: textPrimary }}>
                       {gym.title}
                     </h2>
                     <p className="text-sm mb-3" style={{ color: textSecondary }}>📍 {gym.address}</p>
 
-                    {gym.amenities?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {gym.amenities.slice(0, 3).map((amenity, i) => (
-                          <span
-                            key={i}
-                            className="px-2 py-0.5 rounded-full text-xs"
-                            style={{
-                              backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0',
-                              color: '#D4AF37'
-                            }}
-                          >
-                            {amenity}
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold" style={{ color: '#D4AF37' }}>
+                        ₹{gym.membershipPrice}/mo
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {gym.amenities?.length > 0 && (
+                          <span className="text-xs" style={{ color: textSecondary }}>
+                            {gym.amenities.length} amenities
                           </span>
-                        ))}
-                        {gym.amenities.length > 3 && (
+                        )}
+                        {gym.averageRating && (
                           <span
-                            className="px-2 py-0.5 rounded-full text-xs"
-                            style={{
-                              backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f0f0f0',
-                              color: textSecondary
-                            }}
+                            className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold"
+                            style={{ backgroundColor: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}
                           >
-                            +{gym.amenities.length - 3}
+                            ⭐ {gym.averageRating}
                           </span>
                         )}
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               </NavLink>

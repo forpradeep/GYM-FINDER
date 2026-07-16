@@ -31,8 +31,12 @@ const Navbar = () => {
 
   return (
     <div
-      className="navbar shadow-md px-6"
+      className="navbar shadow-md px-6 z-50"
       style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
         borderBottom: theme === 'dark' ? '1px solid #222' : '1px solid #e5e5e5',
         backgroundColor: theme === 'dark' ? '#111' : '#fff'
       }}
