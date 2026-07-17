@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { logout } from '../store/authSlice'
+import { logout } from '../store/authslice'
 import axiosInstance from '../utils/axiosInstance'
 import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext'

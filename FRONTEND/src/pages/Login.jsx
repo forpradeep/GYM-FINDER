@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDispatch } from 'react-redux';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { login } from '../store/authSlice';
+import { login } from '../store/authslice';
 import { useState } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import { useTheme } from '../context/ThemeContext'
