@@ -127,7 +127,7 @@ const EditGym = () => {
     try {
       const formData = new FormData()
       files.forEach(file => formData.append('images', file))
-      const response = await axios.post('http://localhost:3000/api/gyms/upload', formData, {
+      const response = await axios.post('https://gymfinder-backend-z655.onrender.com/api/gyms/upload', formData, {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' }
       })
