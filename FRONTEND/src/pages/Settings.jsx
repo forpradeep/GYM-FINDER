@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { NavLink } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
-import { login } from '../store/authSlice'
+import { login } from '../store/authslice'
 import axiosInstance from '../utils/axiosInstance'
 
 const getPlanLabel = (type) => ({
