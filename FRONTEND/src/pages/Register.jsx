@@ -60,7 +60,8 @@ function Register() {
 
           {/* Google Login */}
           <a
-            href="http://localhost:3000/api/auth/google"
+            href="https://gymfinder-backend-z655.onrender.com/api/auth/google"
+
             className="w-full py-3 rounded-lg font-medium flex items-center justify-center gap-3 transition-all hover:opacity-90"
             style={{ backgroundColor: '#fff', color: '#333' }}
           >
