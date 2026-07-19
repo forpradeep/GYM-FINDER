@@ -19,9 +19,10 @@ const register = async (req, res) => {
         );
         // In both login and register, update cookie options:
         res.cookie('token', token, {
-            maxAge: 30 * 24 * 60 * 60 * 1000, //30 days instead of 1 hour
+            maxAge: 30 * 24 * 60 * 60 * 1000,
             httpOnly: true,
-            sameSite: 'lax'
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production' ? true : false
         })
         res.status(201).json({
             user: { _id: user._id, firstName: user.firstName, emailId: user.emailId, role: user.role },
@@ -53,10 +54,11 @@ const login = async (req, res) => {
             { expiresIn: 30 * 24 * 60 * 60 } // ← 30 days
         );
         res.cookie('token', token, {
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days instead of 1 hour
+            maxAge: 30 * 24 * 60 * 60 * 1000,
             httpOnly: true,
-            sameSite: 'lax'
-        });
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production' ? true : false
+        })
         res.status(200).json({
             user: { _id: user._id, firstName: user.firstName, emailId: user.emailId, role: user.role },
             message: "Logged In Successfully"

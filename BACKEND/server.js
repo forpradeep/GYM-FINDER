@@ -11,13 +11,14 @@ const app = express();
 app.use(cors({
     origin: ['http://localhost:5173', 'https://gym-finder-roan.vercel.app'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie']
 }));
 
 app.use(express.json());
 app.use(cookieParser());
-
+app.set('trust proxy', 1)
 const authRouter = require('./routes/auth');
 const gymRouter = require('./routes/gyms');
 const reviewRouter = require('./routes/reviews');
